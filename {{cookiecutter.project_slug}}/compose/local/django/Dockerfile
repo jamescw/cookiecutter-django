@@ -12,6 +12,17 @@ RUN apt-get update \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
+  
+{% if cookiecutter.use_celery == "y" %}
+# Enable SSH support on Azure
+# https://github.com/Azure-Samples/docker-django-webapp-linux/blob/master/Dockerfile
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get install -y --no-install-recommends dialog \
+	&& apt-get install -y --no-install-recommends openssh-server \
+	&& echo "$SSH_PASSWD" | chpasswd 
+
+COPY sshd_config /etc/ssh/
+{% endif %}
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
